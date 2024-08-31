@@ -8,6 +8,20 @@ Visual Studio 2022: Ensure Visual Studio 2022 is installed on your machine with 
     ASP.NET and web development (if applicable)
     SQL Server Management Studio (SSMS): Required for managing the database used in the project.
     .NET Framework:
+                        Database Creation: The CREATE DATABASE gatePass command initializes the database. The USE gatePass command ensures that all subsequent commands are executed in this database context.
+            
+            Tables Overview:
+            
+            appUser: Manages application users with roles and enabled status.
+            employee: Stores employee details and links each employee to a user in appUser.
+            visitors: Manages basic visitor information.
+            Visitors: A more detailed visitor table that includes additional fields like email, photo, and visit details.
+            Pass: Manages visitor passes and links to the Visitors table using the UniqueID foreign key.
+            Data Types: The script uses appropriate data types, such as VARCHAR for text, DATETIME for date-time fields, and VARBINARY for storing images.
+            
+            Constraints: Primary keys and foreign keys are defined to maintain data integrity.
+            
+            Consistency: The script consistently applies naming conventions and constraints, ensuring that the database structure is clear and maintainable.
 
 .NET Framework Version [Specify Version, e.g., 4.7.2 or later]: Ensure that the required version of the .NET Framework is installed.
   Database:
