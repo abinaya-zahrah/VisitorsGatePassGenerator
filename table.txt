@@ -1,0 +1,99 @@
+-- Create the database
+CREATE DATABASE gatePass;
+GO
+
+-- Switch to the newly created database
+USE gatePass;
+GO
+
+-- Create table for application users
+CREATE TABLE appUser (
+    appuser_pk INT IDENTITY(1,1) PRIMARY KEY,  -- Primary key with auto-increment
+    username VARCHAR(250) NOT NULL,            -- Username (not null)
+    upass VARCHAR(250) NOT NULL,               -- User password (not null)
+    urole VARCHAR(50) NOT NULL,                -- User role (not null)
+    uenabled TINYINT DEFAULT 1 NOT NULL        -- Enabled flag (tinyint, default 1)
+);
+GO
+
+-- Create table for employees, referencing appUser
+CREATE TABLE employee (
+    employee_pk INT IDENTITY(1,1) PRIMARY KEY, -- Primary key with auto-increment
+    ename VARCHAR(250),                       -- Employee name
+    hiredate DATETIME,                        -- Hire date
+    contact BIGINT,                           -- Contact number (bigint to support large numbers)
+    gender VARCHAR(50),                       -- Gender
+    eaddress VARCHAR(350),                    -- Employee address
+    city VARCHAR(50),                         -- City
+    estate VARCHAR(50),                       -- State
+    appuser_fk INT NOT NULL,                  -- Foreign key to appUser
+    FOREIGN KEY (appuser_fk) REFERENCES appUser(appuser_pk)
+);
+GO
+
+-- Create another visitors table with more detailed information
+CREATE TABLE Visitors (
+    VisitorID INT IDENTITY(1,1) PRIMARY KEY,   -- Primary key with auto-increment
+    Name VARCHAR(250),                         -- Visitor name
+    EmailAddress VARCHAR(250),                 -- Visitor's email address
+    Contact BIGINT,                            -- Contact number
+    VisitDate DATE,                            -- Date of visit
+    VisitTime DATETIME,                        -- Combined date and time of visit
+    Gender VARCHAR(50),                        -- Gender
+    Address VARCHAR(350),                      -- Visitor's address
+    City VARCHAR(100),                         -- City
+    State VARCHAR(100),                        -- State
+    UniqueID VARCHAR(50),                      -- Unique ID generated
+    PurposeOfVisit VARCHAR(100),               -- Purpose of visit
+    Department VARCHAR(100),                   -- Department
+    IDProofType VARCHAR(100),                  -- ID proof type
+    IDNumber VARCHAR(100),                     -- ID proof number
+    Photo VARBINARY(MAX)                       -- Photo of the visitor stored as binary data
+);
+GO
+
+-- Create table for passes, referencing the Visitors table
+CREATE TABLE Pass (
+    PassNo INT IDENTITY(1,1) PRIMARY KEY,      -- Primary key with auto-increment
+    PassID VARCHAR(50) NOT NULL,               -- Pass ID
+    CompanyName VARCHAR(250),                  -- Company name
+    DivisionName VARCHAR(250),                 -- Division name
+    Location VARCHAR(250),                     -- Location
+    Valid_from DATE,                           -- Validity start date
+    Valid_to DATE,                             -- Validity end date
+    Valid_from_time DATETIME,                  -- Validity start time
+    Valid_to_time DATETIME,                    -- Validity end time
+    Visitor_Name VARCHAR(250),                 -- Visitor name
+    UniqueID VARCHAR(50),                      -- Unique ID (foreign key)
+    PurposeOfVisit VARCHAR(100),               -- Purpose of visit
+    Department VARCHAR(100),                   -- Department
+    Photo VARBINARY(MAX),                      -- Photo of the visitor
+    FOREIGN KEY (UniqueID) REFERENCES Visitors(UniqueID)  -- Foreign key constraint
+);
+GO
+
+
+-- Create the stored procedure to generate the next employee ID with a fixed prefix
+CREATE PROCEDURE GenerateEmployeeID
+    @NewEmployeeID VARCHAR(50) OUTPUT  -- Output parameter to return the new employee ID
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @Prefix VARCHAR(50) = '24HALEMPAC';  -- Fixed prefix for the employee ID
+    DECLARE @MaxID INT;                        -- Variable to hold the maximum numeric part of the ID
+    DECLARE @FormattedID VARCHAR(50);          -- Variable to store the new employee ID
+
+    -- Get the current maximum numeric part of the employee ID with the given prefix
+    SELECT @MaxID = ISNULL(MAX(CAST(SUBSTRING(employee_id, LEN(@Prefix) + 1, LEN(employee_id)) AS INT)), 0)
+    FROM employee
+    WHERE employee_id LIKE @Prefix + '%';
+
+    -- Generate the new ID with zero-padding to ensure a 3-digit increment
+    SET @FormattedID = @Prefix + RIGHT('000' + CAST(@MaxID + 1 AS VARCHAR(3)), 3);
+
+    -- Return the new employee ID
+    SET @NewEmployeeID = @FormattedID;
+END;
+GO
+
